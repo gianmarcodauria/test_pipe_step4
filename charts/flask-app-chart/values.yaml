@@ -2,7 +2,7 @@
 replicaCount: 1
 
 image:
-  repository: lorenzocafarelli/flask-app-example
+  repository: gianmarco.dauria/flask-app-example
   pullPolicy: IfNotPresent
   tag: "latest"
 

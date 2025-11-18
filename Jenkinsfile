@@ -1,10 +1,10 @@
 pipeline {
     agent {
-        label 'docker-agent'
+        label 'podman-agent-01'
     }
 
     environment {
-        DOCKER_HUB_USER = 'lorenzocafarelli'
+        DOCKER_HUB_USER = 'admin'
         IMAGE_NAME = "flask-app-example"
         DOCKERHUB_CRED_ID = 'dockerhub-creds'
         KUBECONFIG_CRED_ID = 'k8s-kubeconfig' // Assicurati che l'ID sia questo
