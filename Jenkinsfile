@@ -1,19 +1,19 @@
 pipeline {
     agent {
-        label 'podman-agent-01'
+        label 'docker-agent-01' // deve essere un nodo con Docker nativo
     }
 
     environment {
         DOCKER_HUB_USER = 'admin'
         IMAGE_NAME = "flask-app-example"
         DOCKERHUB_CRED_ID = 'dockerhub-creds'
-        KUBECONFIG_CRED_ID = 'k8s-kubeconfig' // Assicurati che l'ID sia questo
+        KUBECONFIG_CRED_ID = 'k8s-kubeconfig' // Assicurati che l'ID esista in Jenkins
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                echo "Cloning repository on docker agent..."
+                echo "Cloning repository on Docker agent..."
                 checkout scm
             }
         }
@@ -21,7 +21,6 @@ pipeline {
         stage('Set Image Tag') {
             steps {
                 script {
-                    // Torniamo al metodo semplice che funzionava
                     env.IMAGE_TAG = "dev-${env.BUILD_NUMBER}"
                     env.FULL_IMAGE_NAME = "${env.DOCKER_HUB_USER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
                     
@@ -52,7 +51,7 @@ pipeline {
                         echo "Pushing image..."
                         sh "docker push ${env.FULL_IMAGE_NAME}"
 
-                        sh "docker logout"
+                        sh "docker logout || true"
                     }
                 }
             }
@@ -61,11 +60,8 @@ pipeline {
         stage('Deploy to K8s') {
             steps {
                 script {
-                     withKubeConfig([credentialsId: env.KUBECONFIG_CRED_ID]) {
+                    withKubeConfig([credentialsId: env.KUBECONFIG_CRED_ID]) {
                         echo "Deploying to Kubernetes with Helm..."
-                        
-                        // === LA CORREZIONE È QUI ===
-                        // Aggiunto il flag --insecure-skip-tls-verify alla fine
                         sh """
                             helm upgrade --install flask-app ./charts/flask-app-chart \
                                 --namespace default \
@@ -87,3 +83,4 @@ pipeline {
         }
     }
 }
+
